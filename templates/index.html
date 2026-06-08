@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Quant Demo</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --bg: #05060A;
+    --panel: #0B0D14;
+    --button: #11141D;
+    --border: #23283A;
+    --soft-border: #1A1F2E;
+    --inactive-text: #A0A7B8;
+    --active-text: #C8D1FF;
+    --active-glow: #5A63FF;
+    --glow-shadow: rgba(90,99,255,0.35);
+    --dark-shadow: rgba(0,0,0,0.55);
+}
+
+body {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: radial-gradient(circle at top, #0B0D14 0%, var(--bg) 58%);
+    color: var(--inactive-text);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    letter-spacing: -0.01em;
+}
+
+/* Left control panel */
+.control-panel {
+    width: 300px;
+    background: linear-gradient(180deg, #0D1018 0%, var(--panel) 100%);
+    border-right: 1px solid var(--soft-border);
+    box-shadow: inset -1px 0 0 rgba(255,255,255,0.03), 18px 0 45px var(--dark-shadow);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+}
+
+.control-panel h3 { color: var(--active-text); margin-bottom: 5px; font-weight: 500; letter-spacing: -0.015em; }
+
+.input-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.vector-inputs {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.control-panel input {
+    width: 50px;
+    padding: 5px;
+    border: 1px solid var(--soft-border);
+    border-radius: 8px;
+    background: linear-gradient(180deg, #121622 0%, #0F131D 100%);
+    color: var(--active-text);
+    text-align: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 10px 24px rgba(0,0,0,0.25);
+}
+
+.control-panel button {
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: linear-gradient(180deg, #121622 0%, #0F131D 100%);
+    color: var(--inactive-text);
+    cursor: pointer;
+    transition: transform 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    margin-right: 5px;
+    font: inherit;
+    letter-spacing: -0.015em;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 24px rgba(0,0,0,0.25), 0 18px 45px var(--dark-shadow);
+}
+
+.control-panel button:hover {
+    transform: translateY(-1px);
+    border-color: var(--active-glow);
+    color: var(--active-text);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 0 0 1px rgba(90,99,255,0.08), 0 14px 30px rgba(0,0,0,0.35), 0 22px 55px var(--dark-shadow);
+}
+
+.eig-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+}
+
+.eigvals {
+    background: linear-gradient(180deg, #0D1018 0%, var(--panel) 100%);
+    border: 1px solid var(--soft-border);
+    color: var(--inactive-text);
+    padding: 8px;
+    border-radius: 10px;
+    text-align: center;
+    white-space: pre-line;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 12px 30px rgba(0,0,0,0.28);
+}
+
+.eigenvector-columns {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+}
+
+.eigenvector-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Canvas container */
+.canvas-container {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+    gap: 40px;
+    overflow: auto;
+    background: radial-gradient(circle at 50% 0%, rgba(90,99,255,0.08), transparent 34%), var(--bg);
+}
+
+.canvas-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+canvas {
+    border-radius: 12px;
+    background-color: var(--panel);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 18px 50px var(--dark-shadow);
+    border: 1px solid var(--border);
+}
+
+.canvas-button {
+    flex: 1;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: linear-gradient(180deg, #121622 0%, #0F131D 100%);
+    color: var(--inactive-text);
+    cursor: pointer;
+    transition: transform 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    min-width: 0;
+    font: inherit;
+    letter-spacing: -0.015em;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 24px rgba(0,0,0,0.25), 0 18px 45px var(--dark-shadow);
+}
+
+.canvas-button:hover {
+    transform: translateY(-1px);
+    border-color: var(--active-glow);
+    color: var(--active-text);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 0 0 1px rgba(90,99,255,0.08), 0 14px 30px rgba(0,0,0,0.35), 0 22px 55px var(--dark-shadow);
+}
+
+.canvas-button.active {
+    background: linear-gradient(180deg, #151A2B 0%, #101525 100%);
+    border-color: var(--active-glow);
+    color: var(--active-text);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 1px rgba(90,99,255,0.16), 0 0 22px var(--glow-shadow), 0 18px 48px var(--dark-shadow);
+}
+
+.canvas-button.active:hover {
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 0 0 1px rgba(90,99,255,0.22), 0 0 28px var(--glow-shadow), 0 22px 55px var(--dark-shadow);
+}
+
+.canvas-button-row {
+    width: 75%;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+/* Math-style matrix display */
+.matrix-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--inactive-text);
+}
+
+.matrix-wrapper, .vector-wrapper {
+    position: relative;
+    display: inline-block;
+    padding: 0 12px;
+}
+
+.matrix-wrapper::before, .matrix-wrapper::after,
+.vector-wrapper::before, .vector-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    border: solid var(--border);
+}
+
+.matrix-wrapper::before, .vector-wrapper::before { border-width: 2px 0 2px 2px; left: 0; border-radius: 4px 0 0 4px; }
+.matrix-wrapper::after, .vector-wrapper::after { border-width: 2px 2px 2px 0; right: 0; border-radius: 0 4px 4px 0; }
+
+.matrix-table, .vector-table {
+    border-collapse: collapse;
+}
+
+.matrix-table td, .vector-table td {
+    padding: 0 8px;
+    text-align: center;
+}
+</style>
+</head>
+<body>
+
+<!-- Control panel -->
+<div class="control-panel">
+    <div class="input-section">
+        <h3>Matrix A:</h3>
+        <table>
+            <tr>
+                <td><input id="a00" value="2"></td>
+                <td><input id="a01" value="1"></td>
+            </tr>
+            <tr>
+                <td><input id="a10" value="2"></td>
+                <td><input id="a11" value="3"></td>
+            </tr>
+        </table>
+
+        <h3>Vector x:</h3>
+        <div class="vector-inputs">
+            <input id="x0" value="1">
+            <input id="x1" value="1">
+        </div>
+    </div>
+
+    <div class="eig-section">
+        <h3>Eigenvalues:</h3>
+        <div class="eigvals" id="eigenvalues-text">Loading eigenvalues...</div>
+    </div>
+
+    <div class="eig-section">
+        <h3>Eigenvectors:</h3>
+        <div class="eigvals" id="eigenvectors-text">Loading eigenvectors...</div>
+    </div>
+
+</div>
+
+<!-- Canvas area -->
+<div class="canvas-container">
+    <!-- Canvas1 -->
+    <div class="canvas-wrapper">
+        <div class="matrix-display" id="canvas1-matrixvector-text"></div>
+        <canvas id="canvas1" width="600" height="600"></canvas>
+        <div class="canvas-button-row">
+            <button class="canvas-button" id="btnA">A applied</button>
+        </div>
+        <div class="canvas-button-row">
+            <button class="canvas-button" id="btnA-active">A active</button>
+            <button class="canvas-button" id="btnA-passive">A passive</button>
+        </div>
+        <div class="canvas-button-row">
+            <button class="canvas-button" id="btnCanvas1Static">Static</button>
+            <button class="canvas-button" id="btnCanvas1Dynamic">Dyamic</button>
+        </div>
+    </div>
+
+    <!-- Canvas2 -->
+    <div class="canvas-wrapper">
+        <div class="matrix-display" id="canvas2-matrixvector-text">
+            <div id="canvas2-matrixP" style="display:none;"></div>
+            <div id="canvas2-matrixD" style="display:none;"></div>
+            <div id="canvas2-matrixP1" style="display:none;"></div>
+            <div id="canvas2-vector-text" style="display:block;"></div>
+        </div>
+
+        <canvas id="canvas2" width="600" height="600"></canvas>
+        <!-- Button row for toggling matrices -->
+        <div class="canvas-button-row">
+            <button class="canvas-button" id="btnP">Apply P</button>
+            <button class="canvas-button" id="btnD">Apply D</button>
+            <button class="canvas-button" id="btnP1">Apply P⁻¹</button>
+        </div>
+        <div class="canvas-button-row">
+            <button class="canvas-button" id="btnP-active">P active</button>
+            <button class="canvas-button" id="btnD-active">D active</button>
+            <button class="canvas-button" id="btnP1-active">P⁻¹ active</button>
+        </div>
+        <div class="canvas-button-row">
+            <button class="canvas-button" id="btnP-passive">P passive</button>
+            <button class="canvas-button" id="btnD-passive">D passive</button>
+            <button class="canvas-button" id="btnP1-passive">P⁻¹ passive</button>
+        </div>
+        <div class="canvas-button-row">
+            <button class="canvas-button" id="btnCanvas2Static">Static</button>
+            <button class="canvas-button" id="btnCanvas2Dynamic">Dyamic</button>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="/static/script.js"></script>
+</body>
+</html>
